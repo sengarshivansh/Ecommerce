@@ -26,6 +26,9 @@ class UpdateCartRequest(BaseModel):
     product_id: int
     quantity : int
 
+class RemoveCartRequest(BaseModel):
+    product_id: int
+
 @router.post("/add")
 def add_item(
     addtocartrequest: AddToCartRequest,
@@ -144,6 +147,58 @@ def cart_update(
         db.commit()
 
         return {"message":"Cart Updated"}
-    
 
-    
+
+@router.delete("/delete")
+def remove_item(
+        removecartrequest: RemoveCartRequest,
+        db: Session = Depends(get_db),
+        user : Users = Depends(get_current_user)
+    ):
+        cart = db.query(Cart).filter(Cart.user_id == user.id).first()
+
+        if not cart:
+                raise HTTPException(
+                    status_code=404,
+                    detail="Cart not found"
+                )
+
+        item = db.query(CartItem).filter(
+                CartItem.cart_id== cart.id,
+                CartItem.product_id == removecartrequest.product_id
+                ).first()
+            
+        if not item:
+                raise HTTPException(
+                    status_code=404,
+                    detail="Item not in cart"
+                )
+        db.delete(item)
+
+        db.commit()
+
+        return {"message": "Item removed from cart"}
+
+
+@router.delete("/clearcart")
+def clear_cart(
+        db: Session = Depends(get_db),
+        user : Users = Depends(get_current_user)
+    ):
+        cart = db.query(Cart).filter(Cart.user_id == user.id).first()
+
+        if not cart:
+                raise HTTPException(
+                    status_code=404,
+                    detail="Cart not found"
+                )
+
+        db.query(CartItem).filter(
+        CartItem.cart_id == cart.id
+        ).delete()
+
+        db.commit()
+        
+        return {"message":"Cart is Cleared"}
+        
+        
