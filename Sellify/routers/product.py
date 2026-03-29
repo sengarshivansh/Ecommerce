@@ -66,20 +66,30 @@ def create_product(
 #     return products
 
 
-@router.get("/list", response_model=list[ProductResponse])
+@router.get("/list")
 def read_all_products(
     category_id: Optional[int] = None,
+    search: Optional[str] = None,
+    page: int = 1,
+    limit: int = 10,
     db: Session = Depends(get_db)
 ):
-
+    offset = (page - 1) * limit
     query = db.query(Products)
 
     if category_id is not None:
         query = query.filter(Products.category_id == category_id)
+    
+    if search:
+        query = query.filter(Products.name.ilike(f"%{search}%"))
 
-    products = query.all()
+    products = query.offset(offset).limit(limit).all()
 
-    return products
+    return {
+            "page": page,
+            "limit": limit,
+            "data": products
+        }
 
 #for getting one product based on ID (This will be Used when user click on one particular Product)
 
