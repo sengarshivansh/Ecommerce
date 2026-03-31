@@ -7,6 +7,9 @@ from ..database import SessionLocal
 from ..model import Users, Products, Category, Cart, CartItem, Orders, OrderItems
 from Sellify.routers.auth import get_current_admin, get_current_user, get_db
 
+from ..services import order_service
+
+
 router = APIRouter(
     prefix="/order",
     tags=["Order"]
@@ -24,6 +27,11 @@ class OrderResponse(BaseModel):
 class OrderUpdateStatusRequest(BaseModel):
     status: str 
 
+
+class OrderListResponse(BaseModel):
+    page: int
+    limit: int
+    data: list[OrderResponse]
 
 @router.post("/create")
 def create_order(
@@ -64,7 +72,7 @@ def create_order(
             if product.stock < item.quantity:
                 raise HTTPException(
                     status_code = 400,
-                    detail= "Not Enough Product Available"
+                    detail= "Not Enough Product in stock"
                 )
             validated_items.append((item,product))
 
@@ -110,16 +118,32 @@ def create_order(
         db.rollback()
         raise e
         
-@router.get("/me", response_model = list[OrderResponse])
+@router.get("/me", response_model = OrderListResponse)
 def read_order_history(
         user : Users = Depends(get_current_user),
         page: int = 1,
         limit: int = 10,
         db : Session = Depends(get_db)
     ):
+        return order_service.get_user_orders(
+        db, user.id, page, limit
+    )
+
+@router.get("/all",response_model = OrderListResponse)
+def get_all_orders(
+    page: int = 1,
+    limit: int = 10,
+    db: Session = Depends(get_db),
+    admin: Users = Depends(get_current_admin)
+    ):
         offset = (page - 1) * limit
-        orders = db.query(Orders).filter(Orders.user_id == user.id).offset(offset).limit(limit).all()
-        return orders
+        orders = db.query(Orders).offset(offset).limit(limit).all()
+
+        return {
+            "page": page,
+            "limit": limit,
+            "data": orders
+        }
 
 @router.get("/{id}")
 def get_order(
@@ -165,6 +189,7 @@ def get_order(
         "items": response_items
     }
 
+
 @router.put("/{order_id}/status")
 def order_update_status(
     order_id: int,
@@ -179,12 +204,20 @@ def order_update_status(
                 status_code = 404,
                 detail = "Order Not Found"
             )
-        valid_status = {"pending", "confirmed", "shipped", "delivered"}
+        
+        valid_flow = {
+            "pending": ["confirmed"],
+            "confirmed": ["shipped"],
+            "shipped": ["delivered"],
+            "delivered": []
+        }
 
-        if orderupdatestatusrequest.status not in valid_status:
+        new_status = orderupdatestatusrequest.status
+
+        if new_status not in valid_flow[order.status]:
             raise HTTPException(
                 status_code=400,
-                detail="Invalid status"
+                detail=f"Cannot change status from {order.status} to {new_status}"
             )
         
         order.status = orderupdatestatusrequest.status
@@ -195,3 +228,4 @@ def order_update_status(
                 "order_id": order.id,
                 "new_status": order.status
             }
+

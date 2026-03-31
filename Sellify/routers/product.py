@@ -39,6 +39,13 @@ class ProductResponse(BaseModel):
     class Config:
         from_attributes = True
 
+class ProductListResponse(BaseModel):
+    page: int
+    limit: int
+    data: list[ProductResponse]
+
+
+
 @router.post("/create",  response_model = ProductResponse)
 def create_product(
     create_product_request: CreateProductRequest,
@@ -66,10 +73,13 @@ def create_product(
 #     return products
 
 
-@router.get("/list")
+@router.get("/list", response_model=ProductListResponse)
 def read_all_products(
     category_id: Optional[int] = None,
     search: Optional[str] = None,
+    sort: Optional[str] = None,
+    min_price: Optional[int] = None,
+    max_price: Optional[int] = None,
     page: int = 1,
     limit: int = 10,
     db: Session = Depends(get_db)
@@ -77,12 +87,28 @@ def read_all_products(
     offset = (page - 1) * limit
     query = db.query(Products)
 
-    if category_id is not None:
+    #filtereing based on id
+    if category_id:
         query = query.filter(Products.category_id == category_id)
     
+    #searching alike
     if search:
         query = query.filter(Products.name.ilike(f"%{search}%"))
 
+    #sorting
+    if sort == "price_asc":
+        query = query.order_by(Products.price.asc())
+    elif sort == "price_desc":
+        query = query.order_by(Products.price.desc())
+
+    #selcting price range based products
+
+    if min_price:
+        query = query.filter(Products.price >= min_price)
+
+    if max_price:
+        query = query.filter(Products.price <= max_price)
+    #applying pagination
     products = query.offset(offset).limit(limit).all()
 
     return {
