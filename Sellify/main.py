@@ -8,6 +8,11 @@ from .routers.order import router as order_router
 # Import models so they're registered with Base before create_all
 from . import model  # noqa: F401
 
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
+
 app = FastAPI(
     tags = ["Ecommerce web-backend"]
 )

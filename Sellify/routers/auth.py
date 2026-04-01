@@ -1,3 +1,4 @@
+import os
 from datetime import datetime, timedelta, timezone
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel
@@ -11,15 +12,16 @@ from ..database import SessionLocal
 from ..model import Users
 
 
+
 router = APIRouter(
     prefix="/auth",
     tags=["Authentication"]
 )
 
 
-SECRET_KEY = '291391dd1608e868220559bb16794726913cea25bc26b4525a05500467945647'
-ALGORITHM = 'HS256'
-ACCESS_TOKEN_EXPIRE_MINUTES = 30
+SECRET_KEY = os.getenv("SECRET_KEY")
+ALGORITHM = os.getenv("ALGORITHM")
+ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES"))
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
 

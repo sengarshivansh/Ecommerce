@@ -8,7 +8,7 @@ from passlib.context import CryptContext
 from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
 from jose import JWTError, jwt
 
-
+from ..services import product_service
 from ..database import SessionLocal
 from ..model import Users, Products, Category
 
@@ -84,39 +84,16 @@ def read_all_products(
     limit: int = 10,
     db: Session = Depends(get_db)
 ):
-    offset = (page - 1) * limit
-    query = db.query(Products)
-
-    #filtereing based on id
-    if category_id:
-        query = query.filter(Products.category_id == category_id)
-    
-    #searching alike
-    if search:
-        query = query.filter(Products.name.ilike(f"%{search}%"))
-
-    #sorting
-    if sort == "price_asc":
-        query = query.order_by(Products.price.asc())
-    elif sort == "price_desc":
-        query = query.order_by(Products.price.desc())
-
-    #selcting price range based products
-
-    if min_price:
-        query = query.filter(Products.price >= min_price)
-
-    if max_price:
-        query = query.filter(Products.price <= max_price)
-    #applying pagination
-    products = query.offset(offset).limit(limit).all()
-
-    return {
-            "page": page,
-            "limit": limit,
-            "data": products
-        }
-
+    return product_service.get_products(
+        db,
+        category_id,
+        search,
+        sort,
+        min_price,
+        max_price,
+        page,
+        limit
+    )
 #for getting one product based on ID (This will be Used when user click on one particular Product)
 
 @router.get("/{product_id}", response_model = ProductResponse)

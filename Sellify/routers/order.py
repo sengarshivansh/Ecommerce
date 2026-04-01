@@ -35,88 +35,10 @@ class OrderListResponse(BaseModel):
 
 @router.post("/create")
 def create_order(
-    db:Session = Depends(get_db),
+    db: Session = Depends(get_db),
     user: Users = Depends(get_current_user)
 ):
-    try:
-        cart = db.query(Cart).filter(Cart.user_id == user.id).first()
-
-        if not cart:
-            raise HTTPException(
-                status_code = 404,
-                detail = "Cart not Found"
-            )
-        
-        items = db.query(CartItem).filter(CartItem.cart_id == cart.id).all()
-        
-        if not items:
-            raise HTTPException(
-                status_code = 400,
-                detail = "Cart is empty"
-            )
-
-        validated_items = []
-        for item in items:
-            #Here we are using Row locking to avoid race condition
-            product = (
-                db.query(Products)
-                .filter(Products.id == item.product_id)
-                .with_for_update()
-                .first()
-            )
-            if not product:
-                raise HTTPException(
-                    status_code = 404,
-                    detail= "Product Not Found"
-                )
-            if product.stock < item.quantity:
-                raise HTTPException(
-                    status_code = 400,
-                    detail= "Not Enough Product in stock"
-                )
-            validated_items.append((item,product))
-
-        order = Orders(
-            user_id = user.id,
-            total_price = 0,
-            status = "pending"
-        )
-
-        db.add(order)
-        db.flush()
-
-        total_price = 0
-        
-
-        for item,product in validated_items:
-            
-            item_total = product.price * item.quantity
-
-            order_item = OrderItems(
-                order_id = order.id,
-                product_id = product.id,
-                price = product.price,
-                quantity = item.quantity
-            )
-            db.add(order_item)
-            product.stock -= item.quantity
-            total_price += item_total
-
-        order.total_price = total_price
-
-        db.query(CartItem).filter(CartItem.cart_id == cart.id).delete()
-
-        db.commit()
-        db.refresh(order)
-
-        return {
-            "order_id":order.id,
-            "total_price":order.total_price,
-            "status":order.status
-        }
-    except Exception as e:
-        db.rollback()
-        raise e
+    return order_service.create_order(db, user.id)
         
 @router.get("/me", response_model = OrderListResponse)
 def read_order_history(
