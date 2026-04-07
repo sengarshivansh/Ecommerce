@@ -1,12 +1,8 @@
-from datetime import datetime, timedelta, timezone
-from unicodedata import category
 from Sellify.routers.auth import get_current_admin, get_db
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
-from passlib.context import CryptContext
-from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
-from jose import JWTError, jwt
+
 
 
 from ..database import SessionLocal

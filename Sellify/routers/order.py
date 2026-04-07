@@ -1,10 +1,10 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
-from datetime import datetime, timedelta, timezone
+from datetime import datetime
 
 from ..database import SessionLocal
-from ..model import Users, Products, Category, Cart, CartItem, Orders, OrderItems
+from ..model import Users, Products, Orders, OrderItems
 from Sellify.routers.auth import get_current_admin, get_current_user, get_db
 
 from ..services import order_service
