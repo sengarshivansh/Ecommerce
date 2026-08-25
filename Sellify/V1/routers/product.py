@@ -22,6 +22,7 @@ class CreateProductRequest(BaseModel):
     discounted_price: Optional[int] = None
     stock: int
     category_id: int
+    image_url: Optional[str] = None
 
 
 class ProductResponse(BaseModel):
@@ -31,6 +32,7 @@ class ProductResponse(BaseModel):
     price : int
     discounted_price : Optional[int] = None
     stock : int
+    image_url: Optional[str] = None
 
     class Config:
         from_attributes = True

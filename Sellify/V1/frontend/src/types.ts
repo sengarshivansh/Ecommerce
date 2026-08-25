@@ -15,6 +15,7 @@ export interface Product {
   price: number;
   discounted_price: number | null;
   stock: number;
+  image_url: string | null;
 }
 
 export interface ProductListResponse {

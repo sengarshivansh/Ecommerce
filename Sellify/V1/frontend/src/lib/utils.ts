@@ -10,11 +10,11 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-/** Format an integer price (the backend stores prices as whole numbers). */
+/** Format an integer price (the backend stores prices as whole rupees). */
 export function formatPrice(value: number): string {
-  return new Intl.NumberFormat("en-US", {
+  return new Intl.NumberFormat("en-IN", {
     style: "currency",
-    currency: "USD",
+    currency: "INR",
     maximumFractionDigits: 0,
   }).format(value);
 }

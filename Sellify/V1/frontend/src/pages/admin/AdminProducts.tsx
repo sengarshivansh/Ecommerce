@@ -7,6 +7,7 @@ import { Card, CardBody } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
+import { ProductImage } from "@/components/ui/product-image";
 import { formatPrice } from "@/lib/utils";
 
 const EMPTY = {
@@ -16,6 +17,7 @@ const EMPTY = {
   discounted_price: "",
   stock: "",
   category_id: "",
+  image_url: "",
 };
 
 export default function AdminProducts() {
@@ -50,6 +52,7 @@ export default function AdminProducts() {
         discounted_price: form.discounted_price ? Number(form.discounted_price) : null,
         stock: Number(form.stock),
         category_id: Number(form.category_id),
+        image_url: form.image_url.trim() || null,
       });
       setForm({ ...EMPTY });
       refresh();
@@ -136,6 +139,27 @@ export default function AdminProducts() {
                   </select>
                 </div>
               </div>
+              <div>
+                <Label htmlFor="image_url">Image URL</Label>
+                <Input
+                  id="image_url"
+                  value={form.image_url}
+                  onChange={(e) => set("image_url", e.target.value)}
+                  placeholder="/products/iphone.jpg"
+                />
+                <p className="mt-1 text-xs text-slate-500">
+                  A file in <code>public/products/</code> (e.g. <code>/products/iphone.jpg</code>) or a
+                  full https:// URL. Leave blank to show the initial instead.
+                </p>
+                {form.image_url.trim() && (
+                  <ProductImage
+                    src={form.image_url.trim()}
+                    name={form.name || "Preview"}
+                    className="mt-2 h-24 w-full rounded-md border border-slate-200"
+                    fallbackTextClass="text-2xl"
+                  />
+                )}
+              </div>
               {error && <p className="text-sm text-red-700">{error}</p>}
               <Button type="submit" className="w-full" disabled={submitting}>
                 {submitting ? "Saving..." : "Create product"}
@@ -154,6 +178,7 @@ export default function AdminProducts() {
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="border-b border-slate-200 text-left text-slate-500">
+                      <th className="pb-2 font-medium"></th>
                       <th className="pb-2 font-medium">Name</th>
                       <th className="pb-2 text-right font-medium">Price</th>
                       <th className="pb-2 text-right font-medium">Stock</th>
@@ -162,6 +187,14 @@ export default function AdminProducts() {
                   <tbody>
                     {products.map((p) => (
                       <tr key={p.id} className="border-b border-slate-100">
+                        <td className="py-2 pr-2">
+                          <ProductImage
+                            src={p.image_url}
+                            name={p.name}
+                            className="h-10 w-10 rounded"
+                            fallbackTextClass="text-sm"
+                          />
+                        </td>
                         <td className="py-2">{p.name}</td>
                         <td className="py-2 text-right">{formatPrice(p.price)}</td>
                         <td className="py-2 text-right">{p.stock}</td>

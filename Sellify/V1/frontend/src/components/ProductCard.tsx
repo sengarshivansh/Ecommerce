@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import type { Product } from "@/types";
 import { Card } from "@/components/ui/card";
+import { ProductImage } from "@/components/ui/product-image";
 import { formatPrice } from "@/lib/utils";
 
 export function ProductCard({ product }: { product: Product }) {
@@ -10,10 +11,11 @@ export function ProductCard({ product }: { product: Product }) {
   return (
     <Link to={`/product/${product.id}`}>
       <Card className="h-full transition-shadow hover:shadow-md">
-        {/* The backend has no images, so we use a simple coloured placeholder. */}
-        <div className="flex h-36 items-center justify-center rounded-t-lg bg-gradient-to-br from-slate-100 to-slate-200 text-3xl font-bold text-slate-400">
-          {product.name.charAt(0).toUpperCase()}
-        </div>
+        <ProductImage
+          src={product.image_url}
+          name={product.name}
+          className="h-36 rounded-t-lg"
+        />
         <div className="p-4">
           <h3 className="truncate font-medium text-slate-900">{product.name}</h3>
           <p className="mt-1 line-clamp-2 h-10 text-sm text-slate-500">{product.description}</p>

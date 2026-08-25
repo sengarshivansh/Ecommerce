@@ -27,6 +27,7 @@ class Products(Base):
     discounted_price = Column(Integer)
     stock = Column(Integer)
     category_id = Column(Integer, ForeignKey("category.id"))
+    image_url = Column(String, nullable=True)
 
 
 

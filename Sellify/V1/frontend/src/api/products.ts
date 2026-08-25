@@ -32,6 +32,8 @@ export interface CreateProductPayload {
   discounted_price?: number | null;
   stock: number;
   category_id: number;
+  /** Either "/products/foo.jpg" (served by this site) or an absolute URL. */
+  image_url?: string | null;
 }
 
 export function createProduct(payload: CreateProductPayload) {

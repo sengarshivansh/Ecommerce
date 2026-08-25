@@ -6,6 +6,7 @@ import { useAuth } from "@/context/AuthContext";
 import type { Product } from "@/types";
 import { Button } from "@/components/ui/button";
 import { PageSpinner } from "@/components/ui/spinner";
+import { ProductImage } from "@/components/ui/product-image";
 import { formatPrice } from "@/lib/utils";
 import { ArrowLeft, ShoppingCart } from "lucide-react";
 
@@ -60,9 +61,12 @@ export default function ProductDetail() {
       </Button>
 
       <div className="grid gap-8 md:grid-cols-2">
-        <div className="flex h-72 items-center justify-center rounded-lg bg-gradient-to-br from-slate-100 to-slate-200 text-7xl font-bold text-slate-300">
-          {product.name.charAt(0).toUpperCase()}
-        </div>
+        <ProductImage
+          src={product.image_url}
+          name={product.name}
+          className="h-72 rounded-lg"
+          fallbackTextClass="text-7xl"
+        />
 
         <div>
           <h1 className="text-2xl font-bold">{product.name}</h1>
