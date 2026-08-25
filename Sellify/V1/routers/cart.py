@@ -93,14 +93,14 @@ def read_my_cart(
         if not product:
             continue
 
-        item_total = product.price * item.quantity
+        item_total = product.discounted_price * item.quantity
 
         total_cost += item_total
 
         response_items.append({
             "product_id": product.id,
             "name": product.name,
-            "price": product.price,
+            "price": product.discounted_price,
             "quantity": item.quantity,
             "item_cost": item_total
         })

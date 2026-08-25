@@ -45,13 +45,13 @@ def create_order(db, user_id):
         total_price = 0
 
         for item, product in validated_items:
-            item_total = product.price * item.quantity
+            item_total = product.discounted_price * item.quantity
 
             order_repository.create_order_item(
                 db,
                 order.id,
                 product.id,
-                product.price,
+                product.discounted_price,
                 item.quantity
             )
 
