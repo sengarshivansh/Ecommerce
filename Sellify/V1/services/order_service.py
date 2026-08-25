@@ -45,13 +45,14 @@ def create_order(db, user_id):
         total_price = 0
 
         for item, product in validated_items:
-            item_total = product.discounted_price * item.quantity
+            unit_price = product.discounted_price if product.discounted_price is not None else product.price
+            item_total = unit_price * item.quantity
 
             order_repository.create_order_item(
                 db,
                 order.id,
                 product.id,
-                product.discounted_price,
+                product.unit_price,
                 item.quantity
             )
 

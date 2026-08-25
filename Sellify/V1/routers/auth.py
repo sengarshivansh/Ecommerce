@@ -1,12 +1,11 @@
 import os
 from datetime import datetime, timedelta, timezone
 from fastapi import APIRouter, Depends, HTTPException, status
-from pydantic import BaseModel
+from pydantic import BaseModel, EmailStr 
 from sqlalchemy.orm import Session
 from passlib.context import CryptContext
 from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
 from jose import JWTError, jwt
-
 
 from ..database import SessionLocal
 from ..model import Users
@@ -48,7 +47,7 @@ class RegisterUserRequest(BaseModel):
     username: str
     first_name: str
     last_name: str
-    email: str
+    email: EmailStr
     password: str
     phone_number: str
 
@@ -107,6 +106,24 @@ def register_user(
     register_users_request: RegisterUserRequest,
     db: Session = db_dependency
     ):
+
+    existing = db.query(Users).filter(
+    (Users.email == register_users_request.email)
+    | (Users.username == register_users_request.username)
+    | (Users.phone_number == register_users_request.phone_number)
+    ).first()
+
+    if existing:
+        if existing.email == register_users_request.email:
+            field = "email"
+        elif existing.username == register_users_request.username:
+            field = "username"
+        else:
+            field = "phone number"
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=f"An account with that {field} already exists",
+        )
     register_users_model = Users(
         username=register_users_request.username,
         first_name=register_users_request.first_name,

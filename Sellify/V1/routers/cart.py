@@ -93,14 +93,15 @@ def read_my_cart(
         if not product:
             continue
 
-        item_total = product.discounted_price * item.quantity
+        unit_price = product.discounted_price if product.discounted_price is not None else product.price
+        item_total = unit_price * item.quantity
 
         total_cost += item_total
 
         response_items.append({
             "product_id": product.id,
             "name": product.name,
-            "price": product.discounted_price,
+            "price": product.unit_price,
             "quantity": item.quantity,
             "item_cost": item_total
         })
