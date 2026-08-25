@@ -7,7 +7,6 @@ __pycache__/
 
 # Virtual environment
 venv/
-Sellify/venv/
 env/
 
 # OS files
