@@ -113,9 +113,9 @@ cd Ecommerce
 python -m venv venv
 source venv/bin/activate
 
-pip install -r Sellify/requirements.txt
+pip install -r Sellify/V1/requirements.txt
 
-uvicorn Sellify.main:app --reload
+uvicorn Sellify.V1.main:app --reload
 ```
 
 ---
