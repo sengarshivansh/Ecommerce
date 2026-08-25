@@ -1,11 +1,12 @@
 import os
 from datetime import datetime, timedelta, timezone
 from fastapi import APIRouter, Depends, HTTPException, status
-from pydantic import BaseModel, EmailStr 
+from pydantic import BaseModel, EmailStr, Field, field_validator
 from sqlalchemy.orm import Session
 from passlib.context import CryptContext
 from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
 from jose import JWTError, jwt
+import phonenumbers
 
 from ..database import SessionLocal
 from ..model import Users
@@ -44,12 +45,34 @@ def test():
 
 
 class RegisterUserRequest(BaseModel):
-    username: str
-    first_name: str
-    last_name: str
+    username: str = Field(min_length=3, max_length=30)
+    first_name: str = Field(min_length=1, max_length=50)
+    last_name: str = Field(min_length=1, max_length=50)
     email: EmailStr
-    password: str
+    password: str = Field(min_length=8, max_length=128)
     phone_number: str
+
+    @field_validator("phone_number")
+    @classmethod
+    def normalise_phone_number(cls, value: str) -> str:
+        """Require a country code and store the number in E.164 form.
+
+        Normalising here means "+91 98765 43210" and "+919876543210" become the
+        same string, so the UNIQUE constraint on the column actually holds.
+        """
+        try:
+            parsed = phonenumbers.parse(value, None)
+        except phonenumbers.NumberParseException:
+            raise ValueError(
+                "Include the country code, for example +919876543210"
+            )
+
+        if not phonenumbers.is_valid_number(parsed):
+            raise ValueError("Not a valid phone number for that country")
+
+        return phonenumbers.format_number(
+            parsed, phonenumbers.PhoneNumberFormat.E164
+        )
 
 
 def create_access_token(user_id: str, email: str, role: str):
